@@ -9,6 +9,29 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 public class Demo {
+	
+	public static void openWebPage(WebDriver driver, String page) {
+		//open the page using given url in String format
+		driver.get(page);
+	}//openWebPage
+	
+	public static String getPageTitle(WebDriver driver) {
+		//get the title of the given driver page
+		return driver.getTitle();
+	}//getPageTitle
+	
+	public static String getEntireTemp(WebDriver driver)  {
+		//save element for temperature
+		WebElement tempElement = driver.findElement(By.id("temperature"));
+		//save entire string, #degreeC
+		return tempElement.getText();
+	}//getTemp
+	
+	public static int getParseTemp(String entireTemp) {
+		//parse only temperature from string
+		return Integer.parseInt(entireTemp.replaceAll("[^\\d]", ""));
+	}//getParseTemp
+	
 	public static void main(String[] args) throws InterruptedException {
 		//create options for firefox
 		FirefoxOptions options = new FirefoxOptions();
@@ -17,37 +40,32 @@ public class Demo {
 		//wait
 		Thread.sleep(2000);
 		
-		//wait driver
-		//driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(15));
-		
 		//open a specific web page using firefox
-		//driver.navigate().to("https://weathershopper.pythonanywhere.com");
-		driver.get("https://weathershopper.pythonanywhere.com");
+		String page = "https://weathershopper.pythonanywhere.com";
+		//call the openWebPage method
+		openWebPage(driver, page);
 		//wait
 		Thread.sleep(2000);
 		
-		//get the title of the page
-		String title = driver.getTitle();
-		System.out.println(title);
+		//get the title of the page using getPageTitle method
+		String title = getPageTitle(driver);
+		System.out.print("The title of this page is: " + title + ", ");
 		if(title.contains("Current Temperature")){
-			System.out.println("Correct Website");
+			System.out.println("Correct Website.");
 		}//if
 		else {
-			System.out.println("Wrong Website");
+			System.out.println("Wrong Website.");
 		}//else
 		
 		//shop for moisturizers if weather is below 19 degrees
 		//shop for sunscreens if weather is above 34
-		//save element for temperature
-		WebElement tempElement = driver.findElement(By.id("temperature"));
-		//save entire string, #degreeC
-		String entireTemp = tempElement.getText();
-		//parse only temperature from string
-		int temp = Integer.parseInt(entireTemp.replaceAll("[^\\d]", ""));
+		//get the entire temp string using getEntireTemp method
+		String entireTemp = getEntireTemp(driver);
 		
-		System.out.println("web element: " + tempElement);
-		System.out.println("value: " + entireTemp);
-		System.out.println("casted value: " + temp);
+		//parse only temperature from string using getParseTemp method
+		int temp = getParseTemp(entireTemp);
+		
+		System.out.println("The current temperature is: " + entireTemp + ".");
 		//wait
 		Thread.sleep(2000);
 		

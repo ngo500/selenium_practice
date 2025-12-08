@@ -393,8 +393,7 @@ public class Demo {
 			Thread.sleep(2000);
 			
 			//check if payment is successful or not
-			WebElement status = driver.findElement(By.xpath("//h2[contains(text(), 'PAYMENT']"));
-			System.out.println(status);
+			WebElement status = driver.findElement(By.xpath("//h2"));
 			System.out.println(status.getText());
 			if(status.getText().contains("SUCCESS")) {
 				System.out.println("payment success.");

@@ -10,16 +10,31 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 
 public class Demo {
 	
+	/**
+	 * This method takes a given WebDriver and opens a web page url given in String format.
+	 * @param driver The WebDriver being used for the automation.
+	 * @param page The url of the web page to be navigated to in String format.
+	 */
 	public static void openWebPage(WebDriver driver, String page) {
 		//open the page using given url in String format
 		driver.get(page);
 	}//openWebPage
 	
+	/**
+	 * This method takes a given WebDriver and returns the title of the web page in String format.
+	 * @param driver The WebDriver being used for the automation.
+	 * @return The title of the found web page in String format.
+	 */
 	public static String getPageTitle(WebDriver driver) {
 		//get the title of the given driver page
 		return driver.getTitle();
 	}//getPageTitle
 	
+	/**
+	 * This method takes a given WebDriver and returns the entire temperature element of the web page in String format.
+	 * @param driver The WebDriver being used for the automation.
+	 * @return The entire temperature element in String format.
+	 */
 	public static String getEntireTemp(WebDriver driver)  {
 		//save element for temperature
 		WebElement tempElement = driver.findElement(By.id("temperature"));
@@ -27,10 +42,94 @@ public class Demo {
 		return tempElement.getText();
 	}//getTemp
 	
+	/**
+	 * This method takes a given String that contains a temperature element and parses just the temperature number in String format.
+	 * @param entireTemp The String that contains the entire temperature element to be parsed.
+	 * @return The just the number of the temperature in String format.
+	 */
 	public static int getParseTemp(String entireTemp) {
 		//parse only temperature from string
 		return Integer.parseInt(entireTemp.replaceAll("[^\\d]", ""));
 	}//getParseTemp
+	
+	/**
+	 * This method takes a given WebDriver and given String of a button name, and finds and returns the matching WebElement.
+	 * @param driver The WebDriver being used for automation.
+	 * @param buttonName The String link text of the button being searched for.
+	 * @return The WebElement of the matching button.
+	 */
+	public static WebElement setButtonByText(WebDriver driver, String buttonName) {
+		//save the button
+		WebElement buttonElement = driver.findElement(By.linkText(buttonName));
+		return buttonElement;
+	}//setButtonByName
+	
+	/**
+	 * This method takes a given WebDriver, given String of the lowest name in the list, given int of the lowest price in the list,
+	 * and finds and returns the matching 'Add' button WebElement.
+	 * @param driver The WebDriver being used for automation.
+	 * @param lowestName The String of the lowest name in the list.
+	 * @param lowestPrice The int of the lowest price in the list.
+	 * @return The WebElement of the matching 'Add' button.
+	 */
+	public static WebElement setButtonByLeastPath(WebDriver driver, String lowestName, int lowestPrice) {
+		//set the button to the "add" button for the least expensive item by name and price
+		return driver.findElement(By.xpath("//p[contains(text(), '"+lowestName+"')]"
+				+ "//following-sibling::p[contains(text(), '"+lowestPrice+"')]"
+						+ "//following-sibling::button[contains(text(), 'Add')]"));
+	}//setButtonByLeastPath
+	
+	/**
+	 * This method takes a given WebDriver and given String of an element ID, and finds and returns the matching WebElement.
+	 * @param driver The WebDriver being used for automation.
+	 * @param elementId The String of the ID being searched for.
+	 * @return The WebElement that matches the given ID.
+	 */
+	public static WebElement setButtonById(WebDriver driver, String elementId) {
+		return driver.findElement(By.id(elementId));
+	}//setButtonById
+	
+	/**
+	 * This method takes a given WebDriver and given String of an element's XPath, and finds and returns the matching WebElement.
+	 * @param driver  The WebDriver being used for automation.
+	 * @param pathText The String of the XPath being searched for.
+	 * @return The WebElement that matches the given XPath.
+	 */
+	public static WebElement setButtonByXPath(WebDriver driver, String pathText) {
+		return driver.findElement(By.xpath(pathText));
+	}//setButtonByXPath
+	
+	/**
+	 * This method takes a given WebDriver and given String of an element's XPath, and finds and returns all matching WebElements
+	 * in a List of WebElements.
+	 * @param driver The WebDriver being used for automation.
+	 * @param pathText The String of the XPath being used to find all matching elements.
+	 * @return The List of WebElements that match the given XPath.
+	 */
+	public static List<WebElement> setListByXPath(WebDriver driver, String pathText){
+		List<WebElement> foundList = driver.findElements(By.xpath(pathText));
+		return foundList;
+	}//setListByXPath
+	
+	/**
+	 * This method takes a given WebElement and given String of an element's path, and finds and returns all matching WebElements
+	 * in a List of WebElements.
+	 * @param ele The WebElement being searched through.
+	 * @param pathText The String of the XPath being used to find all matching elements.
+	 * @return The List of WebElements that match the given XPath.
+	 */
+	public static List<WebElement> setListElementByXPath(WebElement ele, String pathText){
+		return ele.findElements(By.xpath(pathText));
+	}//setListElementByXPath
+	
+	/**
+	 * This method takes a given WebElement and clicks on it.
+	 * @param buttonElement The WebElement being clicked on.
+	 */
+	public static void clickButton(WebElement buttonElement) {
+		//click the on page button
+		buttonElement.click();
+	}//clickButton
 	
 	public static void main(String[] args) throws InterruptedException {
 		//create options for firefox
@@ -71,11 +170,11 @@ public class Demo {
 		
 		if(temp < 19) {
 			//if weather is below 19 degrees
-			System.out.println("below 19");
-			//save moisturizers page button
-			WebElement buttonMoisturizers = driver.findElement(By.linkText("Buy moisturizers"));
+			System.out.println("The weather is below 19 degrees.");
 			//click the moisturizers page button
-			buttonMoisturizers.click();
+			WebElement buttonMoisturizers = setButtonByText(driver, "Buy moisturizers");
+			clickButton(buttonMoisturizers);
+			
 			//wait
 			Thread.sleep(2000);
 			
@@ -84,9 +183,11 @@ public class Demo {
 			TreeMap<Integer, String> aloeMoi = new TreeMap<>();
 			
 			//create 2 lists to hold the aloe and their prices
-			List<WebElement> aloeList = driver.findElements(By.xpath("//*[text()[contains(.,'Aloe')]]"));
-			List<WebElement> aloePriceList = driver.findElements(By.xpath("//*[text()[contains(.,'Aloe')]]//following-sibling::p[1]"));
-		
+			String aloeListXPath = "//*[text()[contains(.,'Aloe')]]";
+			List<WebElement> aloeList = setListByXPath(driver, aloeListXPath);
+			String aloePriceXPath = "//*[text()[contains(.,'Aloe')]]//following-sibling::p[1]";
+			List<WebElement> aloePriceList = setListByXPath(driver, aloePriceXPath);
+			
 			//create 2 iterators to go through the lists
 			Iterator<WebElement> a1 = aloePriceList.iterator();
 			Iterator<WebElement> a2 = aloeList.iterator();
@@ -108,12 +209,10 @@ public class Demo {
 			System.out.println(lowestAloeName + ", " + lowestAloePrice);
 			
 			//set the button to the "add" button for the least expensive aloe moisturizer
-			buttonMoisturizers = driver.findElement(By.xpath("//p[contains(text(), '"+lowestAloeName+"')]"
-					+ "//following-sibling::p[contains(text(), '"+lowestAloePrice+"')]"
-							+ "//following-sibling::button[contains(text(), 'Add')]"));
+			buttonMoisturizers = setButtonByLeastPath(driver, lowestAloeName, lowestAloePrice);
 			
 			//add the least expensive aloe moisturizer to the cart
-			buttonMoisturizers.click();
+			clickButton(buttonMoisturizers);
 			//wait
 			Thread.sleep(2000);
 			
@@ -122,9 +221,11 @@ public class Demo {
 			TreeMap<Integer, String> almoMoi = new TreeMap<>();
 			
 			//create 2 lists to hold the almond and their prices
-			List<WebElement> almoList = driver.findElements(By.xpath("//*[text()[contains(.,'Almond')]]"));
-			List<WebElement> almoPriceList = driver.findElements(By.xpath("//*[text()[contains(.,'Almond')]]//following-sibling::p[1]"));
-		
+			String almoListXPath = "//*[text()[contains(.,'Almond')]]";
+			List<WebElement> almoList = setListByXPath(driver, almoListXPath);
+			String almoPriceXPath = "//*[text()[contains(.,'Almond')]]//following-sibling::p[1]";
+			List<WebElement> almoPriceList = setListByXPath(driver, almoPriceXPath);
+			
 			//create 2 iterators to go through the lists
 			Iterator<WebElement> a3 = almoPriceList.iterator();
 			Iterator<WebElement> a4 = almoList.iterator();
@@ -146,26 +247,30 @@ public class Demo {
 			System.out.println(lowestAlmoName + ", " + lowestAlmoPrice);
 			
 			//set the button to the "add" button for the least expensive almond moisturizer
-			buttonMoisturizers = driver.findElement(By.xpath("//p[contains(text(), '"+lowestAlmoName+"')]"
-					+ "//following-sibling::p[contains(text(), '"+lowestAlmoPrice+"')]"
-							+ "//following-sibling::button[contains(text(), 'Add')]"));
+			buttonMoisturizers = setButtonByLeastPath(driver, lowestAlmoName, lowestAlmoPrice);
 			
 			//add the least expensive almond moisturizer to the cart
-			buttonMoisturizers.click();
+			clickButton(buttonMoisturizers);
 			//wait
 			Thread.sleep(2000);
 			
 			//save the button of the shopping cart
-			WebElement buttonCart = driver.findElement(By.id("cart"));
+			String shoppingCartId = "cart";
+			
+			WebElement buttonCart = setButtonById(driver, shoppingCartId);
 			//click on the cart
-			buttonCart.click();
+			clickButton(buttonCart);
 			//wait
 			Thread.sleep(2000);
 			
 			//check cart is correct
 			
-			WebElement cartTable = driver.findElement(By.xpath("//table"));
-			List<WebElement> cartCells = cartTable.findElements(By.xpath("./*"));
+			String cartTableXPath = "//table";
+			WebElement cartTable = setButtonByXPath(driver, cartTableXPath);
+			//WebElement cartTable = driver.findElement(By.xpath("//table"));
+			String cartTableElementsXPath = "./*";
+			List<WebElement> cartCells = setListElementByXPath(cartTable, cartTableElementsXPath);
+			//List<WebElement> cartCells = cartTable.findElements(By.xpath("./*"));
 			
 			String cartCellsText = cartCells.get(1).getText();
 			System.out.println(cartCellsText);
@@ -178,9 +283,10 @@ public class Demo {
 			}//else
 			
 			//save the button of the submit
-			WebElement buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
+			String submitButtonXPath = "//button[@type='submit']";
+			WebElement buttonSubmit = setButtonByXPath(driver, submitButtonXPath);
 			//click on the submit button
-			buttonSubmit.click();
+			clickButton(buttonSubmit);
 			//wait
 			Thread.sleep(2000);
 			

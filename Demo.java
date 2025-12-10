@@ -267,10 +267,8 @@ public class Demo {
 			
 			String cartTableXPath = "//table";
 			WebElement cartTable = setButtonByXPath(driver, cartTableXPath);
-			//WebElement cartTable = driver.findElement(By.xpath("//table"));
 			String cartTableElementsXPath = "./*";
 			List<WebElement> cartCells = setListElementByXPath(cartTable, cartTableElementsXPath);
-			//List<WebElement> cartCells = cartTable.findElements(By.xpath("./*"));
 			
 			String cartCellsText = cartCells.get(1).getText();
 			System.out.println(cartCellsText);
@@ -293,41 +291,59 @@ public class Demo {
 			//switch to payment pop-up
 			driver.switchTo().frame("stripe_checkout_app");
 			//input sample email into form
-			WebElement emailField = driver.findElement(By.id("email"));
-			emailField.click();
+			String emailFieldPath = "email";
+			WebElement emailField = setButtonById(driver, emailFieldPath);
+			//WebElement emailField = driver.findElement(By.id("email"));
+			clickButton(emailField);
+			//emailField.click();
 			emailField.sendKeys("sample@example.com");
 			Thread.sleep(300);
 			//input sample card number into form
-			WebElement cardField = driver.findElement(By.id("card_number"));
-			cardField.click();
+			String cardFieldPath = "card_number";
+			WebElement cardField = setButtonById(driver, cardFieldPath);
+			//WebElement cardField = driver.findElement(By.id("card_number"));
+			clickButton(cardField);
+			//cardField.click();
 			cardField.sendKeys("4242");
 			cardField.sendKeys("4242");
 			cardField.sendKeys("4242");
 			cardField.sendKeys("4242");
 			Thread.sleep(300);
 			//input sample card exp into form
-			WebElement expField = driver.findElement(By.id("cc-exp"));
-			expField.click();
+			String expFieldPath = "cc-exp";
+			WebElement expField = setButtonById(driver, expFieldPath);
+			//WebElement expField = driver.findElement(By.id("cc-exp"));
+			clickButton(expField);
+			//expField.click();
 			expField.sendKeys("01");
 			expField.sendKeys("2030");
 			Thread.sleep(300);
 			//input sample card cvc into form
-			WebElement cvcField = driver.findElement(By.id("cc-csc"));
-			cvcField.click();
+			String cvcFieldPath = "cc-csc";
+			WebElement cvcField = setButtonById(driver, cvcFieldPath);
+			//WebElement cvcField = driver.findElement(By.id("cc-csc"));
+			clickButton(cvcField);
+			//cvcField.click();
 			cvcField.sendKeys("123");
 			Thread.sleep(2000);
 			//input sample zip code into form
-			WebElement zipField = driver.findElement(By.id("billing-zip"));
-			zipField.click();
+			String zipFieldPath = "billing-zip";
+			WebElement zipField = setButtonById(driver, zipFieldPath);
+			//WebElement zipField = driver.findElement(By.id("billing-zip"));
+			clickButton(zipField);
+			//zipField.click();
 			zipField.sendKeys("12345");
 			Thread.sleep(300);
 			//wait
 			Thread.sleep(2000);
 			
 			//get submit button
-			buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
+			String buttonSubmitPath = "//button[@type='submit']";
+			buttonSubmit = setButtonByXPath(driver, buttonSubmitPath);
+			//buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
 			//click on the submit button
-			buttonSubmit.click();
+			clickButton(buttonSubmit);
+			//buttonSubmit.click();
 			//wait
 			Thread.sleep(2000);
 			

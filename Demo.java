@@ -53,6 +53,43 @@ public class Demo {
 	}//getParseTemp
 	
 	/**
+	 * This method takes a given TreeMap, List of WebElement names, and List of WebElement Prices, and puts both lists in the map
+	 * in (price, name) format.
+	 * @param map The given TreeMap<Integer, String> used to contain the name and price data.
+	 * @param nameList The given name List<WebElement> used to put the name data into the map.
+	 * @param priceList The given price List<WebElement> used to put the price data into the map.
+	 */ 
+	public static void fillTreeMap(TreeMap<Integer, String> map, List<WebElement> nameList, List<WebElement> priceList) {
+		//create 2 iterators to go through the lists
+		Iterator<WebElement> a1 = priceList.iterator();
+		Iterator<WebElement> a2 = nameList.iterator();
+		
+		//while the lists both have more values
+		while(a1.hasNext() && a2.hasNext()) {
+			//put the the aloe moisturizers in the map in (price, name) format
+			map.put(Integer.parseInt(a1.next().getText().replaceAll("[^\\d]", "")), a2.next().getText());
+		}//while
+	}//fillTreeMap
+	
+	/**
+	 * This method takes a given TreeMap<Integer, String> and returns the lowest price, which is the first key
+	 * @param map The given TreeMap<Integer, String> used to contain the name and price data.
+	 * @return The first key in the TreeMap<Integer, String> in int format, which is the lowest price in the TreeMap.
+	 */
+	public static int getLowestPrice(TreeMap<Integer, String> map){
+		return map.firstKey();
+	}//getLowestPrice
+	
+	/**
+	 * This method takes a given TreeMap<Integer, String> and returns the lowest name, which is the first entry
+	 * @param map The given TreeMap<Integer, String> used to contain the name and price data.
+	 * @return The first entry in the TreeMap<Integer, String> in String format, which is the lowest name in the TreeMap.
+	 */
+	public static String getLowestName(TreeMap<Integer, String> map){
+		return map.firstEntry().getValue();
+	}//getLowestName
+	
+	/**
 	 * This method takes a given WebDriver and given String of a button name, and finds and returns the matching WebElement.
 	 * @param driver The WebDriver being used for automation.
 	 * @param buttonName The String link text of the button being searched for.
@@ -85,9 +122,9 @@ public class Demo {
 	 * @param elementId The String of the ID being searched for.
 	 * @return The WebElement that matches the given ID.
 	 */
-	public static WebElement setButtonById(WebDriver driver, String elementId) {
+	public static WebElement setElementById(WebDriver driver, String elementId) {
 		return driver.findElement(By.id(elementId));
-	}//setButtonById
+	}//setElementById
 	
 	/**
 	 * This method takes a given WebDriver and given String of an element's XPath, and finds and returns the matching WebElement.
@@ -95,9 +132,9 @@ public class Demo {
 	 * @param pathText The String of the XPath being searched for.
 	 * @return The WebElement that matches the given XPath.
 	 */
-	public static WebElement setButtonByXPath(WebDriver driver, String pathText) {
+	public static WebElement setElementByXPath(WebDriver driver, String pathText) {
 		return driver.findElement(By.xpath(pathText));
-	}//setButtonByXPath
+	}//setElementByXPath
 	
 	/**
 	 * This method takes a given WebDriver and given String of an element's XPath, and finds and returns all matching WebElements
@@ -131,7 +168,133 @@ public class Demo {
 		buttonElement.click();
 	}//clickButton
 	
+	/**
+	 * This method takes a given WebDriver and gets the data of the shopping cart, returning the data in String format.
+	 * @param driver The WebDriver being used for automation. 
+	 * @return The shopping cart cells found in String format.
+	 */
+	public static String getCartCellsText(WebDriver driver) {
+		//save cart as a List<WebElement> for easy parsing
+		String elementPath = "//table";
+		WebElement cartTable = setElementByXPath(driver, elementPath);
+		elementPath = "./*";
+		List<WebElement> cartCells = setListElementByXPath(cartTable, elementPath);
+		
+		//get the cart data
+		return cartCells.get(1).getText();
+	}//getCartCellsText
+	
+	/**
+	 * This method takes a given String that contains the current shopping cart's contents and parses it. It looks for the lowest
+	 * name and price of the first item type, and the lowest name and price of the second item type. If all are found in the cart,
+	 * the method returns true. Else, the method returns false.
+	 * @param cartCellsText The String that contains the current contents of the shopping cart.
+	 * @param lowestFirstName The first item type's name to search for in the shopping cart.
+	 * @param lowestFirstPrice The first item type's price to search for in the shopping cart.
+	 * @param lowestSecondName The second item type's name to search for in the shopping cart.
+	 * @param lowestAlmoPrice The second item type's price to search for in the shopping cart.
+	 * @return The boolean that reflects whether all names and prices were found in the shopping cart. Returns true if all were 
+	 * found, and false if they were not all found.
+	 */
+	public static boolean confirmCart(String cartCellsText, String lowestFirstName, int lowestFirstPrice, 
+			String lowestSecondName, int lowestSecondPrice) {
+		if(cartCellsText.contains(lowestFirstName) && cartCellsText.contains(String.valueOf(lowestFirstPrice)) &&
+				cartCellsText.contains(lowestSecondName) && cartCellsText.contains(String.valueOf(lowestSecondPrice))){
+			return true;
+		}//if
+		else {
+			return false;
+		}//else
+	}//confirmCart
+	
+	/**
+	 * This method takes a given WebDriver and goes through a test checkout screen, using real test credit card information.
+	 * @param driver The WebDriver being used for automation. 
+	 * @throws InterruptedException If interrupted, throws InterruptedException error. 
+	 */
+	public static void checkoutCart(WebDriver driver) throws InterruptedException {
+		//save the path of the submit button
+		String elementPath = "//button[@type='submit']";
+		WebElement buttonSubmit = setElementByXPath(driver, elementPath);
+		//click on the submit button
+		clickButton(buttonSubmit);
+		//wait
+		Thread.sleep(2000);
+		
+		//switch to payment pop-up
+		driver.switchTo().frame("stripe_checkout_app");
+		
+		//input sample email into form
+		elementPath = "email";
+		WebElement emailField = setElementById(driver, elementPath);
+		clickButton(emailField);
+		emailField.sendKeys("sample@example.com");
+		Thread.sleep(300);
+		
+		//input sample card number into form
+		elementPath = "card_number";
+		WebElement cardField = setElementById(driver, elementPath);
+		clickButton(cardField);
+		cardField.sendKeys("4242");
+		cardField.sendKeys("4242");
+		cardField.sendKeys("4242");
+		cardField.sendKeys("4242");
+		Thread.sleep(300);
+		
+		//input sample card exp into form
+		elementPath = "cc-exp";
+		WebElement expField = setElementById(driver, elementPath);
+		clickButton(expField);
+		expField.sendKeys("01");
+		expField.sendKeys("2030");
+		Thread.sleep(300);
+		
+		//input sample card cvc into form
+		elementPath = "cc-csc";
+		WebElement cvcField = setElementById(driver, elementPath);
+		clickButton(cvcField);
+		cvcField.sendKeys("123");
+		Thread.sleep(2000);
+		
+		//input sample zip code into form
+		elementPath = "billing-zip";
+		WebElement zipField = setElementById(driver, elementPath);
+		clickButton(zipField);
+		zipField.sendKeys("12345");
+		Thread.sleep(300);
+		
+		//wait
+		Thread.sleep(2000);
+		
+		//get submit button
+		elementPath = "//button[@type='submit']";
+		buttonSubmit = setElementByXPath(driver, elementPath);
+		clickButton(buttonSubmit);
+		
+		//wait
+		Thread.sleep(2000);
+		
+		//change back to main screen
+		driver.switchTo().defaultContent();
+		
+		//wait
+		Thread.sleep(2000);
+	}//checkoutCart
+	
+	/**
+	 * This method takes a given WebDriver and returns the status of the payment made in WebElement format.
+	 * @param driver The WebDriver being used for automation.
+	 * @return The WebElement that holds the status of the payment made.
+	 */
+	public static WebElement getPaymentStatus(WebDriver driver) {
+		//check if payment is successful or not
+		String elementPath = "/html/body/div/div[1]/h2";
+		WebElement status = setElementByXPath(driver, elementPath);
+		return status;
+	}//getPaymentStatus
+	
 	public static void main(String[] args) throws InterruptedException {
+		
 		//create options for firefox
 		FirefoxOptions options = new FirefoxOptions();
 		//set up a new driver to open firefox
@@ -148,412 +311,258 @@ public class Demo {
 		
 		//get the title of the page using getPageTitle method
 		String title = getPageTitle(driver);
-		System.out.print("The title of this page is: " + title + ", ");
+		//print the title
+		System.out.println("The title of this page is: " + title + ".");
+		//check if the page title is correct
 		if(title.contains("Current Temperature")){
+			//the title is correct
 			System.out.println("Correct Website.");
+			
+			//shop for moisturizers if weather is below 19 degrees
+			//shop for sunscreens if weather is above 34
+			//get the entire temp string using getEntireTemp method
+			String entireTemp = getEntireTemp(driver);
+			
+			//parse only temperature from string using getParseTemp method
+			int temp = getParseTemp(entireTemp);
+			
+			//print out what the current temp is
+			System.out.println("The current temperature is: " + entireTemp + ".");
+			//wait
+			Thread.sleep(2000);
+			
+			if(temp < 19) {
+				//if weather is below 19 degrees,
+				System.out.println("The weather is below 19 degrees.");
+				
+				//click the moisturizers page button
+				String elementPath = "Buy moisturizers";
+				WebElement buttonMoisturizers = setButtonByText(driver, elementPath);
+				clickButton(buttonMoisturizers);
+				
+				//wait
+				Thread.sleep(2000);
+				
+				//"Aloe"
+				//create treemap to hold all aloe moisturizers
+				TreeMap<Integer, String> aloeMoi = new TreeMap<>();
+				
+				//create 2 lists to hold the aloe and their prices
+				elementPath = "//*[text()[contains(.,'Aloe')]]";
+				List<WebElement> aloeList = setListByXPath(driver, elementPath);
+				elementPath = "//*[text()[contains(.,'Aloe')]]//following-sibling::p[1]";
+				List<WebElement> aloePriceList = setListByXPath(driver, elementPath);
+				
+				//fill the TreeMap with data from name List<WebElement> and price List<WebElement> in (price, name) format
+				fillTreeMap(aloeMoi, aloeList, aloePriceList);
+				
+				//print out all the aloe moisturizers stored in the map
+				System.out.println("map: " + aloeMoi);
+				
+				//save the least expensive aloe moisturizer price and name
+				int lowestAloePrice = getLowestPrice(aloeMoi);
+				String lowestAloeName = getLowestName(aloeMoi);
+				
+				//print out the least expensive aloe moisturizer
+				System.out.println(lowestAloeName + ", " + lowestAloePrice);
+				
+				//set the button to the "add" button for the least expensive aloe moisturizer
+				buttonMoisturizers = setButtonByLeastPath(driver, lowestAloeName, lowestAloePrice);
+				
+				//add the least expensive aloe moisturizer to the cart
+				clickButton(buttonMoisturizers);
+				//wait
+				Thread.sleep(2000);
+				
+				//"Almond"
+				//create treemap to hold all almond moisturizers
+				TreeMap<Integer, String> almoMoi = new TreeMap<>();
+				
+				//create 2 lists to hold the almond and their prices
+				elementPath = "//*[text()[contains(.,'Almond')]]";
+				List<WebElement> almoList = setListByXPath(driver, elementPath);
+				elementPath = "//*[text()[contains(.,'Almond')]]//following-sibling::p[1]";
+				List<WebElement> almoPriceList = setListByXPath(driver, elementPath);
+				
+				//fill the TreeMap with data from name List<WebElement> and price List<WebElement> in (price, name) format
+				fillTreeMap(almoMoi, almoList, almoPriceList);
+				
+				//print out all the almond moisturizers stored in the map
+				System.out.println("map: " + almoMoi);
+				
+				//save the least expensive almond moisturizer price and name
+				int lowestAlmoPrice = getLowestPrice(almoMoi);
+				String lowestAlmoName = getLowestName(almoMoi);
+				
+				//print out the least expensive almond moisturizer
+				System.out.println(lowestAlmoName + ", " + lowestAlmoPrice);
+				
+				//set the button to the "add" button for the least expensive almond moisturizer
+				buttonMoisturizers = setButtonByLeastPath(driver, lowestAlmoName, lowestAlmoPrice);
+				
+				//add the least expensive almond moisturizer to the cart
+				clickButton(buttonMoisturizers);
+				//wait
+				Thread.sleep(2000);
+				
+				//save the id of the button for the shopping cart
+				elementPath = "cart";
+				WebElement buttonCart = setElementById(driver, elementPath);
+				//click on the cart
+				clickButton(buttonCart);
+				//wait
+				Thread.sleep(2000);
+				
+				//check cart is correct
+				String cartCellsText = getCartCellsText(driver);
+				
+				//print the cart data
+				System.out.println(cartCellsText);
+				
+				//call confirmCart to determine if shopping cart contains all correct items
+				if(confirmCart(cartCellsText, lowestAloeName, lowestAloePrice, lowestAlmoName, lowestAlmoPrice)){
+					System.out.println("found all");
+					
+					//call checkoutCart to proceed through shopping cart checkout process
+					checkoutCart(driver);
+					
+					//call getPaymentStatus to check the current status of the payment
+					WebElement status = getPaymentStatus(driver);
+					
+					//print if the payment was successful or not
+					if(status.getText().contains("SUCCESS")) {
+						System.out.println("payment success.");
+					}//if
+					else {
+						System.out.println("payment failure.");
+					}//else
+					
+					//wait
+					Thread.sleep(2000);
+				}//if
+				else {
+					System.out.println("ERROR- didn't find");
+				}//else
+			}//if
+			else if(temp > 34) {
+				//else if the weather is above 34 degrees
+				System.out.println("The temperature is above 34 degrees.");
+				
+				//click the sunscreen page button
+				String elementPath = "Buy sunscreens";
+				WebElement buttonSunscreens = driver.findElement(By.linkText(elementPath));
+				buttonSunscreens.click();
+				
+				//wait
+				Thread.sleep(2000);
+				
+				//"SPF-30"
+				//create treemap to hold all SPF30 sunscreens
+				TreeMap<Integer, String> spf30Sun = new TreeMap<>();
+				
+				//create 2 lists to hold the SPF30 and their prices
+				List<WebElement> spf30List = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-30')]]"));
+				List<WebElement> spf30PriceList = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-30')]]//following-sibling::p[1]"));
+			
+				//fill the TreeMap with data from name List<WebElement> and price List<WebElement> in (price, name) format
+				fillTreeMap(spf30Sun, spf30List, spf30PriceList);
+				
+				//print out all the SPF30 sunscreens stored in the map
+				System.out.println("map: " + spf30Sun);
+				
+				//save the least expensive SPF30 sunscreen price and name
+				int lowestSPF30Price = spf30Sun.firstKey();
+				String lowestSPF30Name = spf30Sun.firstEntry().getValue();
+				
+				//print out the least expensive SPF30 sunscreen
+				System.out.println(lowestSPF30Name + ", " + lowestSPF30Price);
+				
+				//set the button to the "add" button for the least expensive SPF30 sunscreen
+				buttonSunscreens = setButtonByLeastPath(driver, lowestSPF30Name, lowestSPF30Price);
+				
+				//add the least expensive SPF30 sunscreen to the cart
+				buttonSunscreens.click();
+				//wait
+				Thread.sleep(2000);
+
+				//"SPF-50"
+				//create treemap to hold all SPF50 sunscreens
+				TreeMap<Integer, String> spf50Sun = new TreeMap<>();
+				
+				//create 2 lists to hold the SPF50 and their prices
+				List<WebElement> spf50List = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-50')]]"));
+				List<WebElement> spf50PriceList = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-50')]]//following-sibling::p[1]"));
+			
+				//fill the TreeMap with data from name List<WebElement> and price List<WebElement> in (price, name) format
+				fillTreeMap(spf50Sun, spf50List, spf50PriceList);
+				
+				//print out all the SPF50 sunscreens stored in the map
+				System.out.println("map: " + spf50Sun);
+				
+				//save the least expensive SPF50 sunscreen price and name
+				int lowestSPF50Price = spf50Sun.firstKey();
+				String lowestSPF50Name = spf50Sun.firstEntry().getValue();
+				
+				//print out the least expensive SPF50 sunscreen
+				System.out.println(lowestSPF50Name + ", " + lowestSPF50Price);
+				
+				//set the button to the "add" button for the least expensive SPF50 sunscreen
+				buttonSunscreens = setButtonByLeastPath(driver, lowestSPF50Name, lowestSPF50Price);
+				
+				//add the least expensive SPF50 sunscreen to the cart
+				buttonSunscreens.click();
+				//wait
+				Thread.sleep(2000);
+				
+				//save the button of the shopping cart
+				WebElement buttonCart = driver.findElement(By.id("cart"));
+				//click on the cart
+				buttonCart.click();
+				//wait
+				Thread.sleep(2000);
+				
+				//check cart is correct
+				String cartCellsText = getCartCellsText(driver);
+				
+				//print the cart data
+				System.out.println(cartCellsText);
+				
+				//call confirmCart to determine if shopping cart contains all correct items
+				if(confirmCart(cartCellsText, lowestSPF30Name, lowestSPF30Price, lowestSPF50Name, lowestSPF50Price)){
+					System.out.println("found all");
+					
+					//call checkoutCart to proceed through shopping cart checkout process
+					checkoutCart(driver);
+					
+					//call getPaymentStatus to check the current status of the payment
+					WebElement status = getPaymentStatus(driver);
+					
+					//print if the payment was successful or not
+					if(status.getText().contains("SUCCESS")) {
+						System.out.println("payment success.");
+					}//if
+					else {
+						System.out.println("payment failure.");
+					}//else
+					
+					//wait
+					Thread.sleep(2000);
+				}//if
+				else {
+					System.out.println("ERROR- didn't find");
+				}//else
+			}//else if
+			else {
+				//else the weather is between 19 degrees and 34 degrees
+				System.out.println("ERROR- incorrect temperature");
+				//wait
+				Thread.sleep(2000);
+			}//else
 		}//if
 		else {
-			System.out.println("Wrong Website.");
+			//the title is incorrect
+			System.out.println("ERROR- Wrong Website.");
 		}//else
-		
-		//shop for moisturizers if weather is below 19 degrees
-		//shop for sunscreens if weather is above 34
-		//get the entire temp string using getEntireTemp method
-		String entireTemp = getEntireTemp(driver);
-		
-		//parse only temperature from string using getParseTemp method
-		int temp = getParseTemp(entireTemp);
-		
-		System.out.println("The current temperature is: " + entireTemp + ".");
-		//wait
-		Thread.sleep(2000);
-		
-		if(temp < 19) {
-			//if weather is below 19 degrees
-			System.out.println("The weather is below 19 degrees.");
-			//click the moisturizers page button
-			WebElement buttonMoisturizers = setButtonByText(driver, "Buy moisturizers");
-			clickButton(buttonMoisturizers);
-			
-			//wait
-			Thread.sleep(2000);
-			
-			//"Aloe"
-			//create treemap to hold all aloe moisturizers
-			TreeMap<Integer, String> aloeMoi = new TreeMap<>();
-			
-			//create 2 lists to hold the aloe and their prices
-			String aloeListXPath = "//*[text()[contains(.,'Aloe')]]";
-			List<WebElement> aloeList = setListByXPath(driver, aloeListXPath);
-			String aloePriceXPath = "//*[text()[contains(.,'Aloe')]]//following-sibling::p[1]";
-			List<WebElement> aloePriceList = setListByXPath(driver, aloePriceXPath);
-			
-			//create 2 iterators to go through the lists
-			Iterator<WebElement> a1 = aloePriceList.iterator();
-			Iterator<WebElement> a2 = aloeList.iterator();
-			
-			//while the lists both have more values
-			while(a1.hasNext() && a2.hasNext()) {
-				//put the the aloe moisturizers in the map in (price, name) format
-				aloeMoi.put(Integer.parseInt(a1.next().getText().replaceAll("[^\\d]", "")), a2.next().getText());
-			}//while
-			
-			//print out all the aloe moisturizers stored in the map
-			System.out.println("map: " + aloeMoi);
-			
-			//save the least expensive aloe moisturizer price and name
-			int lowestAloePrice = aloeMoi.firstKey();
-			String lowestAloeName = aloeMoi.firstEntry().getValue();
-			
-			//print out the least expensive aloe moisturizer
-			System.out.println(lowestAloeName + ", " + lowestAloePrice);
-			
-			//set the button to the "add" button for the least expensive aloe moisturizer
-			buttonMoisturizers = setButtonByLeastPath(driver, lowestAloeName, lowestAloePrice);
-			
-			//add the least expensive aloe moisturizer to the cart
-			clickButton(buttonMoisturizers);
-			//wait
-			Thread.sleep(2000);
-			
-			//"Almond"
-			//create treemap to hold all almond moisturizers
-			TreeMap<Integer, String> almoMoi = new TreeMap<>();
-			
-			//create 2 lists to hold the almond and their prices
-			String almoListXPath = "//*[text()[contains(.,'Almond')]]";
-			List<WebElement> almoList = setListByXPath(driver, almoListXPath);
-			String almoPriceXPath = "//*[text()[contains(.,'Almond')]]//following-sibling::p[1]";
-			List<WebElement> almoPriceList = setListByXPath(driver, almoPriceXPath);
-			
-			//create 2 iterators to go through the lists
-			Iterator<WebElement> a3 = almoPriceList.iterator();
-			Iterator<WebElement> a4 = almoList.iterator();
-			
-			//while the lists both have more values
-			while(a3.hasNext() && a4.hasNext()) {
-				//put the the aloe moisturizers in the map in (price, name) format
-				almoMoi.put(Integer.parseInt(a3.next().getText().replaceAll("[^\\d]", "")), a4.next().getText());
-			}//while
-			
-			//print out all the almond moisturizers stored in the map
-			System.out.println("map: " + almoMoi);
-			
-			//save the least expensive almond moisturizer price and name
-			int lowestAlmoPrice = almoMoi.firstKey();
-			String lowestAlmoName = almoMoi.firstEntry().getValue();
-			
-			//print out the least expensive almond moisturizer
-			System.out.println(lowestAlmoName + ", " + lowestAlmoPrice);
-			
-			//set the button to the "add" button for the least expensive almond moisturizer
-			buttonMoisturizers = setButtonByLeastPath(driver, lowestAlmoName, lowestAlmoPrice);
-			
-			//add the least expensive almond moisturizer to the cart
-			clickButton(buttonMoisturizers);
-			//wait
-			Thread.sleep(2000);
-			
-			//save the button of the shopping cart
-			String shoppingCartId = "cart";
-			
-			WebElement buttonCart = setButtonById(driver, shoppingCartId);
-			//click on the cart
-			clickButton(buttonCart);
-			//wait
-			Thread.sleep(2000);
-			
-			//check cart is correct
-			
-			String cartTableXPath = "//table";
-			WebElement cartTable = setButtonByXPath(driver, cartTableXPath);
-			String cartTableElementsXPath = "./*";
-			List<WebElement> cartCells = setListElementByXPath(cartTable, cartTableElementsXPath);
-			
-			String cartCellsText = cartCells.get(1).getText();
-			System.out.println(cartCellsText);
-			if(cartCellsText.contains(lowestAloeName) && cartCellsText.contains(String.valueOf(lowestAloePrice)) &&
-					cartCellsText.contains(lowestAlmoName) && cartCellsText.contains(String.valueOf(lowestAlmoPrice))){
-				System.out.println("found all");
-			}//if
-			else {
-				System.out.println("didn't find");
-			}//else
-			
-			//save the button of the submit
-			String submitButtonXPath = "//button[@type='submit']";
-			WebElement buttonSubmit = setButtonByXPath(driver, submitButtonXPath);
-			//click on the submit button
-			clickButton(buttonSubmit);
-			//wait
-			Thread.sleep(2000);
-			
-			//switch to payment pop-up
-			driver.switchTo().frame("stripe_checkout_app");
-			//input sample email into form
-			String emailFieldPath = "email";
-			WebElement emailField = setButtonById(driver, emailFieldPath);
-			//WebElement emailField = driver.findElement(By.id("email"));
-			clickButton(emailField);
-			//emailField.click();
-			emailField.sendKeys("sample@example.com");
-			Thread.sleep(300);
-			//input sample card number into form
-			String cardFieldPath = "card_number";
-			WebElement cardField = setButtonById(driver, cardFieldPath);
-			//WebElement cardField = driver.findElement(By.id("card_number"));
-			clickButton(cardField);
-			//cardField.click();
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			Thread.sleep(300);
-			//input sample card exp into form
-			String expFieldPath = "cc-exp";
-			WebElement expField = setButtonById(driver, expFieldPath);
-			//WebElement expField = driver.findElement(By.id("cc-exp"));
-			clickButton(expField);
-			//expField.click();
-			expField.sendKeys("01");
-			expField.sendKeys("2030");
-			Thread.sleep(300);
-			//input sample card cvc into form
-			String cvcFieldPath = "cc-csc";
-			WebElement cvcField = setButtonById(driver, cvcFieldPath);
-			//WebElement cvcField = driver.findElement(By.id("cc-csc"));
-			clickButton(cvcField);
-			//cvcField.click();
-			cvcField.sendKeys("123");
-			Thread.sleep(2000);
-			//input sample zip code into form
-			String zipFieldPath = "billing-zip";
-			WebElement zipField = setButtonById(driver, zipFieldPath);
-			//WebElement zipField = driver.findElement(By.id("billing-zip"));
-			clickButton(zipField);
-			//zipField.click();
-			zipField.sendKeys("12345");
-			Thread.sleep(300);
-			//wait
-			Thread.sleep(2000);
-			
-			//get submit button
-			String buttonSubmitPath = "//button[@type='submit']";
-			buttonSubmit = setButtonByXPath(driver, buttonSubmitPath);
-			//buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
-			//click on the submit button
-			clickButton(buttonSubmit);
-			//buttonSubmit.click();
-			//wait
-			Thread.sleep(2000);
-			
-			//change back to main screen
-			driver.switchTo().defaultContent();
-			
-			//wait
-			Thread.sleep(2000);
-			
-			//check if payment is successful or not
-			WebElement status = driver.findElement(By.xpath("/html/body/div/div[1]/h2"));
-			System.out.println(status);
-			System.out.println(status.getText());
-			if(status.getText().contains("SUCCESS")) {
-				System.out.println("payment success.");
-			}//if
-			else {
-				System.out.println("payment failure.");
-			}//else
-			
-			//wait
-			Thread.sleep(2000);
-			
-		}//if
-		else if(temp > 34) {
-			//else if the weather is above 34 degrees
-			System.out.println("above 34");
-			//save sunscreen page button
-			WebElement buttonSunscreens = driver.findElement(By.linkText("Buy sunscreens"));
-			//click the sunscreen page button
-			buttonSunscreens.click();
-			//wait
-			Thread.sleep(2000);
-			
-			//"SPF-30"
-			//create treemap to hold all SPF30 sunscreens
-			TreeMap<Integer, String> spf30Sun = new TreeMap<>();
-			
-			//create 2 lists to hold the SPF30 and their prices
-			List<WebElement> spf30List = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-30')]]"));
-			List<WebElement> spf30PriceList = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-30')]]//following-sibling::p[1]"));
-		
-			//create 2 iterators to go through the lists
-			Iterator<WebElement> s1 = spf30PriceList.iterator();
-			Iterator<WebElement> s2 = spf30List.iterator();
-			
-			//while the lists both have more values
-			while(s1.hasNext() && s2.hasNext()) {
-				//put the the SPF30 sunscreens in the map in (price, name) format
-				spf30Sun.put(Integer.parseInt(s1.next().getText().replaceAll("[^\\d]", "")), s2.next().getText());
-			}//while
-			
-			//print out all the SPF30 sunscreens stored in the map
-			System.out.println("map: " + spf30Sun);
-			
-			//save the least expensive SPF30 sunscreen price and name
-			int lowestSPF30Price = spf30Sun.firstKey();
-			String lowestSPF30Name = spf30Sun.firstEntry().getValue();
-			
-			//print out the least expensive SPF30 sunscreen
-			System.out.println(lowestSPF30Name + ", " + lowestSPF30Price);
-			
-			//set the button to the "add" button for the least expensive SPF30 sunscreen
-			buttonSunscreens = driver.findElement(By.xpath("//p[contains(text(), '"+lowestSPF30Name+"')]"
-					+ "//following-sibling::p[contains(text(), '"+lowestSPF30Price+"')]"
-							+ "//following-sibling::button[contains(text(), 'Add')]"));
-			
-			//add the least expensive SPF30 sunscreen to the cart
-			buttonSunscreens.click();
-			//wait
-			Thread.sleep(2000);
-
-			//"SPF-50"
-			//create treemap to hold all SPF50 sunscreens
-			TreeMap<Integer, String> spf50Sun = new TreeMap<>();
-			
-			//create 2 lists to hold the SPF50 and their prices
-			List<WebElement> spf50List = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-50')]]"));
-			List<WebElement> spf50PriceList = driver.findElements(By.xpath("//*[text()[contains(.,'SPF-50')]]//following-sibling::p[1]"));
-		
-			//create 2 iterators to go through the lists
-			Iterator<WebElement> s3 = spf50PriceList.iterator();
-			Iterator<WebElement> s4 = spf50List.iterator();
-			
-			//while the lists both have more values
-			while(s3.hasNext() && s4.hasNext()) {
-				//put the the SPF50 sunscreens in the map in (price, name) format
-				spf50Sun.put(Integer.parseInt(s3.next().getText().replaceAll("[^\\d]", "")), s4.next().getText());
-			}//while
-			
-			//print out all the SPF50 sunscreens stored in the map
-			System.out.println("map: " + spf50Sun);
-			
-			//save the least expensive SPF50 sunscreen price and name
-			int lowestSPF50Price = spf50Sun.firstKey();
-			String lowestSPF50Name = spf50Sun.firstEntry().getValue();
-			
-			//print out the least expensive SPF50 sunscreen
-			System.out.println(lowestSPF50Name + ", " + lowestSPF50Price);
-			
-			//set the button to the "add" button for the least expensive SPF50 sunscreen
-			buttonSunscreens = driver.findElement(By.xpath("//p[contains(text(), '"+lowestSPF50Name+"')]"
-					+ "//following-sibling::p[contains(text(), '"+lowestSPF50Price+"')]"
-							+ "//following-sibling::button[contains(text(), 'Add')]"));
-			
-			//add the least expensive SPF50 sunscreen to the cart
-			buttonSunscreens.click();
-			//wait
-			Thread.sleep(2000);
-			
-			//save the button of the shopping cart
-			WebElement buttonCart = driver.findElement(By.id("cart"));
-			//click on the cart
-			buttonCart.click();
-			//wait
-			Thread.sleep(2000);
-			
-			//check cart is correct
-			WebElement cartTable = driver.findElement(By.xpath("//table"));
-			List<WebElement> cartCells = cartTable.findElements(By.xpath("./*"));
-			
-			String cartCellsText = cartCells.get(1).getText();
-			System.out.println(cartCellsText);
-			if(cartCellsText.contains(lowestSPF30Name) && cartCellsText.contains(String.valueOf(lowestSPF30Price)) &&
-					cartCellsText.contains(lowestSPF50Name) && cartCellsText.contains(String.valueOf(lowestSPF50Price))){
-				System.out.println("found all");
-			}//if
-			else {
-				System.out.println("didn't find");
-			}//else
-			
-			//save the button of the submit
-			//WebElement buttonSubmit = driver.findElement(By.linkText("Pay with Card"));
-			WebElement buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
-			//click on the submit button
-			buttonSubmit.click();
-			//wait
-			Thread.sleep(2000);
-			
-			//switch to payment pop-up
-			driver.switchTo().frame("stripe_checkout_app");
-			//input sample email into form
-			WebElement emailField = driver.findElement(By.id("email"));
-			emailField.click();
-			emailField.sendKeys("sample@example.com");
-			Thread.sleep(300);
-			//input sample card number into form
-			WebElement cardField = driver.findElement(By.id("card_number"));
-			cardField.click();
-			//cardField.sendKeys("4242 4242 4242 4242");
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			cardField.sendKeys("4242");
-			Thread.sleep(300);
-			//input sample card exp into form
-			WebElement expField = driver.findElement(By.id("cc-exp"));
-			expField.click();
-			expField.sendKeys("01");
-			expField.sendKeys("2030");
-			Thread.sleep(300);
-			//input sample card cvc into form
-			WebElement cvcField = driver.findElement(By.id("cc-csc"));
-			cvcField.click();
-			cvcField.sendKeys("123");
-			Thread.sleep(2000);
-			//input sample zip code into form
-			WebElement zipField = driver.findElement(By.id("billing-zip"));
-			zipField.click();
-			zipField.sendKeys("12345");
-			Thread.sleep(300);
-			//wait
-			Thread.sleep(2000);
-			
-			//get submit button
-			buttonSubmit = driver.findElement(By.xpath("//button[@type='submit']"));
-			//click on the submit button
-			buttonSubmit.click();
-			//wait
-			Thread.sleep(2000);
-			
-
-			//change back to main screen
-			driver.switchTo().defaultContent();
-			
-			//wait
-			Thread.sleep(2000);
-			
-			//check if payment is successful or not
-			WebElement status = driver.findElement(By.xpath("//h2"));
-			System.out.println(status.getText());
-			if(status.getText().contains("SUCCESS")) {
-				System.out.println("payment success.");
-			}//if
-			else {
-				System.out.println("payment failure.");
-			}//else
-			
-			//wait
-			Thread.sleep(2000);
-			
-		}//else if
-		else {
-			//else the weather is between 19 degrees and 34 degrees
-			driver.navigate().refresh();
-			System.out.println("refreshed page");
-			//wait
-			Thread.sleep(2000);
-		}//else
-		
 		
 		//end the session ALWAYS NEEDED
 		driver.quit();
